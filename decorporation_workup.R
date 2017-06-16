@@ -23,10 +23,12 @@ colnames(weights) <- c("group", "number", "day.0.weight", "day.2.weight")
 #ggplot(weights, aes(x=group, y=day.0.weight)) + 
 #  geom_point()
 
+mweights <- melt(weights, id= c("group", "number"))
+
 weights <- cbind(weights, weights$day.2.weight-weights$day.0.weight)
 colnames(weights) <- c(colnames(weights[1:4]), "change")
 
-mweights <- melt(weights, id= c("group", "number"))
+
 
 #--- BEGIN PLOTTING OF DATA ----
 
