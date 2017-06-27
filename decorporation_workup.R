@@ -8,37 +8,40 @@ library(plyr)
 
 weights <- read.csv(file = "Data/decorporation536 weights.csv")
 
-#class(weights)
-#dim(weights)
-#plot(weights)
-#weight1 <- weights [1:60, 2]
-#weight2 <- weights [1:60, 3]
-#plot(weight1)
-#plot(weight2)
 
 # --- MAKING COLUMNS ----
+
+# adding groups column to weights 
 
 groups <- matrix(LETTERS[1:15])
 groups <- cbind(groups, groups, groups, groups)
 groups <- as.vector(t(groups))
 weights <- cbind(groups, weights)
 colnames(weights) <- c("group", "number", "day.0.weight", "day.2.weight")
-#ggplot(weights, aes(x=group, y=day.0.weight)) + 
-#  geom_point()
+
+# melting weights into 1 column
 
 mweights <- melt(weights, id= c("group", "number"))
 
-weights <- cbind(weights, weights$day.2.weight-weights$day.0.weight, (weights$day.2.weight/weights$day.0.weight)*100)
+# converting weights to change and % change 
+
+weights <- cbind(weights, weights$day.2.weight-weights$day.0.weight, 
+                 (weights$day.2.weight/weights$day.0.weight)*100)
 colnames(weights) <- c(colnames(weights[1:4]), "change", "percent")
 
+# adding column for arms
 
-#as.quoted(c("control", "DOTA/TREN", "Scn")) 
-#ddply(.data=weights, .variables = (control, DOTA/TREN, Scn), .fun = mutate)
+arm <- matrix(LETTERS[1:15])
+arm <- cbind(arm, arm, arm, arm)
+arm <- as.vector(t(arm))
+weights <- cbind(weights, arm)
+weights$arm <- as.character(weights$arm)
+weights$arm[ which(groups =="B" | groups =="K" | groups =="L" | groups =="M" 
+                   | groups =="N" | groups =="O") ] <- "DOTA/TREN" 
+weights$arm[ which(groups =="A") ] <- "Control" 
+weights$arm[ which(groups == "C" | groups =="D" | groups =="E" | groups =="F" | groups =="G"
+                   | groups =="H" | groups =="I" | groups =="J") ] <- "Scn" 
 
-#arm <- ddply(weights, .(group), mutate)
-
-#ddply(mexp[ which(mexp$ExpNum == i), ]
-weights[ which(weights$group == "A"), ]
 
 #--- BEGIN PLOTTING OF DATA ----
 
@@ -48,7 +51,7 @@ fhei = 6
 theme_set(theme_bw())
 theme_update(plot.title = element_text(hjust = 0.5))
 
-# --- WEIGHTS BY DAY AND GROUP ----
+# weights by day and group
 
 ggplot(mweights, aes(x=group, y=value))+
   geom_boxplot(aes(fill=group))+
@@ -59,17 +62,35 @@ ggplot(mweights, aes(x=variable, y=value))+
   facet_wrap(~group)+
   scale_fill_brewer()
 
-# --- GROSS WEIGHT CHANGE ----
+# gross weight change
 
 ggplot(weights, aes(x=groups, y=change))+
   geom_boxplot(aes(fill=groups))
 
-# --- PERCENT WEIGHT CHANGE ----
+# percent weight change
 
 ggplot(weights, aes(x=groups, y=percent))+
-  geom_boxplot(aes(fill=groups))
+  geom_boxplot(aes(fill = groups))
+
+p1 <- c("#6600FF", "#9966FF", "#6633CC", "#333366", "#333399", "#3333CC", "#3333FF", "#003399", 
+        "#006699", "#336666", "#339999", "#33CCCC", "#33FFFF", "#33CC99", "#66FFCC") 
+p2 <- c("#FF9900", "#FF9933", "#FFCC33", "#FFCC99", "#FF9999", "#FFCCCC", "#FFCC00", "#FFFF33", 
+        "#CCFF00", "#CCFFCC", "#99FFCC", "#66FFCC", "#00FFFF", "#33CCCC", "#339999") 
 
 ggplot(weights, aes(x=groups, y=percent))+
   geom_point(aes(color=groups))+
-  scale_color_brewer(palette = "Spectral")
+  scale_color_manual(values = p2)
+
+# percent weight change by arms
+
+dota <- weights[ which(weights$arm == "Control" | weights$arm == "DOTA/TREN"), ]
+
+ggplot(dota, aes(x=group, y=percent))+
+  geom_boxplot(aes(fill = arm))+
+  scale_fill_brewer(palette = "GnBu")
   
+scn <- weights[ which(weights$arm == "Control" | weights$arm == "Scn"), ]
+
+ggplot(scn, aes(x=group, y=percent))+
+  geom_boxplot(aes(fill=arm))+
+  scale_fill_brewer(palette = "BuGn")
