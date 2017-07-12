@@ -72,8 +72,3 @@ print(len(Group))
 samples = np.column_stack((Group, Type, Sample, Source))
 print(samples)
 np.savetxt("Data/ExpandedLSC.csv", samples, delimiter=",", fmt="%s")
-#import csv
-#with open("Data/ExpandedLSC.csv", "wb") as csv_file:
-#        writer = csv.writer(csv_file, delimiter=',')
-#        for line in samples:
-#            writer.writerow(line)
